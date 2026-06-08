@@ -42,7 +42,7 @@ export default function Home() {
     const randomCode: string = Math.random().toString(36).substring(2, 8)
     
     const shortenedUrl: ShortenedUrl = {
-      id: '',
+      
       longUrl: formState.longUrl,
       shortCode: randomCode,
       createdAt: new Date(),
