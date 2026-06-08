@@ -1,21 +1,67 @@
 "use client"
 
 import { useState } from 'react'
+import type { ShortenedUrl, UrlFormState } from './types/url.types'
 
 export default function Home() {
-  const [longUrl, setLongUrl] = useState('')
-  const [shortCode, setShortCode] = useState('')
+  // Typed state
+  const [formState, setFormState] = useState<UrlFormState>({
+    longUrl: '',
+    isLoading: false,
+    error: null
+  })
+  
+  const [result, setResult] = useState<ShortenedUrl | null>(null)
 
-  const handleShorten = () => {
-    // Generate a random 6-character code (temporary mock logic)
-    const randomCode = Math.random().toString(36).substring(2, 8)
-    setShortCode(randomCode)
+  // Typed event handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setFormState(prev => ({
+      ...prev,
+      longUrl: e.target.value,
+      error: null
+    }))
   }
 
-  const handleClear = () => {
-  setLongUrl('')
-  setShortCode('')
-}
+  // Typed async function
+  const handleShorten = async (): Promise<void> => {
+    // Basic validation
+    if (!formState.longUrl.trim()) {
+      setFormState(prev => ({ ...prev, error: 'Please enter a URL' }))
+      return
+    }
+
+    // Simple URL validation
+    try {
+      new URL(formState.longUrl)
+    } catch {
+      setFormState(prev => ({ ...prev, error: 'Please enter a valid URL' }))
+      return
+    }
+
+    setFormState(prev => ({ ...prev, isLoading: true, error: null }))
+
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // Generate random code (mock logic)
+    const randomCode: string = Math.random().toString(36).substring(2, 8)
+    
+    const shortenedUrl: ShortenedUrl = {
+      longUrl: formState.longUrl,
+      shortCode: randomCode,
+      createdAt: new Date(),
+      clicks: 0
+    }
+
+    setResult(shortenedUrl)
+    setFormState(prev => ({ ...prev, isLoading: false }))
+  }
+
+  // Typed copy handler
+  const handleCopy = async (text: string): Promise<void> => {
+    await navigator.clipboard.writeText(text)
+    alert('Copied to clipboard!')
+  }
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
@@ -26,37 +72,46 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Enter your long URL"
-            value={longUrl}
-            onChange={(e) => setLongUrl(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div>
+            <input
+              type="text"
+              placeholder="Enter your long URL (e.g., https://example.com)"
+              value={formState.longUrl}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {formState.error && (
+              <p className="text-red-500 text-sm mt-2">{formState.error}</p>
+            )}
+          </div>
+
           <button 
             onClick={handleShorten}
-            className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+            disabled={formState.isLoading || !formState.longUrl.trim()}
+            className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Shorten URL
+            {formState.isLoading ? 'Shortening...' : 'Shorten URL'}
           </button>
         </div>
 
-        {shortCode && (
+        {result && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm text-gray-600 mb-2">Your shortened URL:</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 bg-white px-3 py-2 rounded border text-blue-600">
-                localhost:3000/{shortCode}
+            <div className="flex items-center gap-2 mb-3">
+              <code className="flex-1 bg-white px-3 py-2 rounded border text-blue-600 overflow-x-auto">
+                localhost:3000/u/{result.shortCode}
               </code>
               <button 
-                onClick={() => navigator.clipboard.writeText(`localhost:3000/${shortCode}`)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                onClick={() => handleCopy(`http://localhost:3000/u/${result.shortCode}`)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm whitespace-nowrap"
               >
                 Copy
               </button>
-              <button onClick={handleClear} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                Reset
-              </button>
+            </div>
+            <div className="text-xs text-gray-500 space-y-1">
+              <p>Original: {result.longUrl}</p>
+              <p>Created: {result.createdAt?.toLocaleString()}</p>
+              <p>Clicks: {result.clicks}</p>
             </div>
           </div>
         )}
