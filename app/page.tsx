@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type { ShortenedUrl, UrlFormState } from './types/url.types'
 
 export default function Home() {
-  // Typed state
+ 
   const [formState, setFormState] = useState<UrlFormState>({
     longUrl: '',
     isLoading: false,
@@ -13,7 +13,7 @@ export default function Home() {
   
   const [result, setResult] = useState<ShortenedUrl | null>(null)
 
-  // Typed event handler
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFormState(prev => ({
       ...prev,
@@ -22,15 +22,12 @@ export default function Home() {
     }))
   }
 
-  // Typed async function
   const handleShorten = async (): Promise<void> => {
-    // Basic validation
     if (!formState.longUrl.trim()) {
       setFormState(prev => ({ ...prev, error: 'Please enter a URL' }))
       return
     }
 
-    // Simple URL validation
     try {
       new URL(formState.longUrl)
     } catch {
@@ -40,13 +37,12 @@ export default function Home() {
 
     setFormState(prev => ({ ...prev, isLoading: true, error: null }))
 
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    // Generate random code (mock logic)
     const randomCode: string = Math.random().toString(36).substring(2, 8)
     
     const shortenedUrl: ShortenedUrl = {
+      id: '',
       longUrl: formState.longUrl,
       shortCode: randomCode,
       createdAt: new Date(),
@@ -57,7 +53,6 @@ export default function Home() {
     setFormState(prev => ({ ...prev, isLoading: false }))
   }
 
-  // Typed copy handler
   const handleCopy = async (text: string): Promise<void> => {
     await navigator.clipboard.writeText(text)
     alert('Copied to clipboard!')

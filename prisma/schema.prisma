@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Link {
+  id        String   @id @default(cuid())
+  longUrl   String
+  shortCode String   @unique
+  createdAt DateTime @default(now())
+  clicks    Int      @default(0)
+  
+  @@map("links")
+}
+
