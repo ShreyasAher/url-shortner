@@ -2,22 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateShortCode, isValidUrl, normalizeUrl } from '@/lib/utils'
 
-// Type for the request body
 type CreateShortUrlBody = {
   longUrl: string
 }
 
-/**
- * POST /api/short
- * Creates a shortened URL
- */
+
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
+    
     const body: CreateShortUrlBody = await request.json()
     const { longUrl } = body
 
-    // Validation
+    
     if (!longUrl) {
       return NextResponse.json(
         { error: 'URL is required' },
@@ -25,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Normalize and validate URL
+    
     const normalizedUrl = normalizeUrl(longUrl)
     
     if (!isValidUrl(normalizedUrl)) {
@@ -35,7 +31,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if URL already exists
+    
     const existingLink = await prisma.link.findFirst({
       where: { longUrl: normalizedUrl }
     })
@@ -51,13 +47,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate unique short code
+    
     let shortCode = generateShortCode(6)
     let isUnique = false
     let attempts = 0
     const maxAttempts = 10
 
-    // Ensure uniqueness (retry if collision)
+  
     while (!isUnique && attempts < maxAttempts) {
       const existing = await prisma.link.findUnique({
         where: { shortCode }
@@ -78,7 +74,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create the short URL in database
+    
     const link = await prisma.link.create({
       data: {
         longUrl: normalizedUrl,
@@ -86,7 +82,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Return success response
+    
     return NextResponse.json(
       {
         success: true,
@@ -105,15 +101,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * GET /api/short
- * Get all shortened URLs (for dashboard later)
- */
+
 export async function GET() {
   try {
     const links = await prisma.link.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 10 // Limit to 10 most recent
+      take: 10 
     })
 
     return NextResponse.json({

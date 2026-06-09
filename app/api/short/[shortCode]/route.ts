@@ -7,16 +7,13 @@ type Props = {
   }>
 }
 
-/**
- * GET /api/short/:shortCode
- * Get details of a specific short URL
- */
+
 export async function GET(
   request: NextRequest,
   { params }: Props
 ) {
   try {
-    const { shortCode } = await params  // ← Added await
+    const { shortCode } = await params 
 
     const link = await prisma.link.findUnique({
       where: { shortCode }
@@ -44,16 +41,13 @@ export async function GET(
   }
 }
 
-/**
- * DELETE /api/short/:shortCode
- * Delete a short URL
- */
+
 export async function DELETE(
   request: NextRequest,
   { params }: Props
 ) {
   try {
-    const { shortCode } = await params  // ← Added await
+    const { shortCode } = await params  
 
     await prisma.link.delete({
       where: { shortCode }

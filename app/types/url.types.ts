@@ -1,4 +1,3 @@
-
 export interface ShortenedUrl {
   id?: string              
   longUrl: string

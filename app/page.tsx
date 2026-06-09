@@ -29,7 +29,7 @@ export default function Home() {
     setFormState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      // Call our API endpoint
+      
       const response = await fetch('/api/short', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
