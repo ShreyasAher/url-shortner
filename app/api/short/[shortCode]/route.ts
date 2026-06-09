@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 type Props = {
-  params: {
+  params: Promise<{
     shortCode: string
-  }
+  }>
 }
 
 /**
@@ -16,7 +16,7 @@ export async function GET(
   { params }: Props
 ) {
   try {
-    const { shortCode } = params
+    const { shortCode } = await params  // ← Added await
 
     const link = await prisma.link.findUnique({
       where: { shortCode }
@@ -46,14 +46,14 @@ export async function GET(
 
 /**
  * DELETE /api/short/:shortCode
- * Delete a short URL (for later)
+ * Delete a short URL
  */
 export async function DELETE(
   request: NextRequest,
   { params }: Props
 ) {
   try {
-    const { shortCode } = params
+    const { shortCode } = await params  // ← Added await
 
     await prisma.link.delete({
       where: { shortCode }
