@@ -82,25 +82,32 @@ export default function DashboardPage() {
       
       <header className="bg-white shadow-sm border-b border-gray-200">
 
-          <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-        >
-          Sign Out
-        </button>
-        
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
               <p className="text-gray-600 mt-1">Manage your shortened URLs</p>
             </div>
-            <Link
-              href="/"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              ➕ Create New
-            </Link>
+            <div className="flex items-center gap-3">
+        <Link
+          href="/"
+          className="text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
+        >
+          ← Home
+        </Link>
+        <Link
+          href="/"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+        >
+          ➕ Create New
+        </Link>
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-semibold"
+        >
+          Sign Out
+        </button>
+      </div>
           </div>
         </div>
       </header>
