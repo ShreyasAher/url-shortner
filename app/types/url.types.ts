@@ -1,5 +1,5 @@
 export interface ShortenedUrl {
-  id?: string              
+  id: string              
   longUrl: string
   shortCode: string
   createdAt: Date         

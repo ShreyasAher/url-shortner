@@ -1,5 +1,9 @@
 "use client"
 
+import Link from 'next/link'
+
+
+
 import { useState } from 'react'
 import type { ShortenedUrl, UrlFormState } from './types/url.types'
 
@@ -66,12 +70,18 @@ export default function Home() {
       <div className="w-full max-w-xl bg-white shadow-xl rounded-2xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            URL Shortener
+             URL Shortener
           </h1>
-          <p className="text-gray-600">
-            Transform long URLs into short, shareable links
-          </p>
-        </div>
+           <p className="text-gray-600 mb-4">
+                 Transform long URLs into short, shareable links
+            </p>
+     <Link 
+       href="/dashboard"
+       className="inline-block text-blue-600 hover:text-blue-700 font-semibold text-sm"
+  >
+    📊 View Dashboard →
+     </Link>
+</div>
 
         <div className="space-y-4">
           <div>
