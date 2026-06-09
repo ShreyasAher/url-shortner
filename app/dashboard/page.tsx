@@ -1,15 +1,45 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { signOut } from "next-auth/react"
 import Link from 'next/link'
 import type { ShortenedUrl } from '@/app/types/url.types'
 import { LinkCard } from '@/components/ui/link-card'
 import { StatCard } from '@/components/ui/stat-card'
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
 
 export default function DashboardPage() {
+
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login")
+    }
+  }, [status, router])
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">⏳</div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
   const [links, setLinks] = useState<ShortenedUrl[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
 
   
   useEffect(() => {
@@ -47,9 +77,18 @@ export default function DashboardPage() {
   const avgClicks = totalLinks > 0 ? (totalClicks / totalLinks).toFixed(1) : '0'
 
   return (
+    
     <main className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       
       <header className="bg-white shadow-sm border-b border-gray-200">
+
+          <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+        >
+          Sign Out
+        </button>
+        
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
