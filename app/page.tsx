@@ -4,7 +4,6 @@ import { useState } from 'react'
 import type { ShortenedUrl, UrlFormState } from './types/url.types'
 
 export default function Home() {
- 
   const [formState, setFormState] = useState<UrlFormState>({
     longUrl: '',
     isLoading: false,
@@ -13,7 +12,6 @@ export default function Home() {
   
   const [result, setResult] = useState<ShortenedUrl | null>(null)
 
-  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFormState(prev => ({
       ...prev,
@@ -28,29 +26,32 @@ export default function Home() {
       return
     }
 
-    try {
-      new URL(formState.longUrl)
-    } catch {
-      setFormState(prev => ({ ...prev, error: 'Please enter a valid URL' }))
-      return
-    }
-
     setFormState(prev => ({ ...prev, isLoading: true, error: null }))
 
-    await new Promise(resolve => setTimeout(resolve, 500))
+    try {
+      // Call our API endpoint
+      const response = await fetch('/api/short', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ longUrl: formState.longUrl })
+      })
 
-    const randomCode: string = Math.random().toString(36).substring(2, 8)
-    
-    const shortenedUrl: ShortenedUrl = {
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to shorten URL')
+      }
+
+      setResult(data.data)
+      setFormState(prev => ({ ...prev, isLoading: false, longUrl: '' }))
       
-      longUrl: formState.longUrl,
-      shortCode: randomCode,
-      createdAt: new Date(),
-      clicks: 0
+    } catch (error) {
+      setFormState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Something went wrong'
+      }))
     }
-
-    setResult(shortenedUrl)
-    setFormState(prev => ({ ...prev, isLoading: false }))
   }
 
   const handleCopy = async (text: string): Promise<void> => {
@@ -58,55 +59,80 @@ export default function Home() {
     alert('Copied to clipboard!')
   }
 
-  return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6">
-        <h1 className="text-3xl font-bold text-center mb-4">URL Shortener</h1>
-        <p className="text-gray-600 text-center mb-6">
-          Paste your long URL and create a short one.
-        </p>
+  const shortUrl = result ? `${window.location.origin}/u/${result.shortCode}` : ''
 
-        <div className="flex flex-col gap-4">
+  return (
+    <main className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-xl bg-white shadow-xl rounded-2xl p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            URL Shortener
+          </h1>
+          <p className="text-gray-600">
+            Transform long URLs into short, shareable links
+          </p>
+        </div>
+
+        <div className="space-y-4">
           <div>
             <input
               type="text"
               placeholder="Enter your long URL (e.g., https://example.com)"
               value={formState.longUrl}
               onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition"
             />
             {formState.error && (
-              <p className="text-red-500 text-sm mt-2">{formState.error}</p>
+              <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                <span>⚠️</span> {formState.error}
+              </p>
             )}
           </div>
 
           <button 
             onClick={handleShorten}
             disabled={formState.isLoading || !formState.longUrl.trim()}
-            className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {formState.isLoading ? 'Shortening...' : 'Shorten URL'}
+            {formState.isLoading ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                Shortening...
+              </>
+            ) : (
+              <>
+                <span>✂️</span>
+                Shorten URL
+              </>
+            )}
           </button>
         </div>
 
         {result && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">Your shortened URL:</p>
-            <div className="flex items-center gap-2 mb-3">
-              <code className="flex-1 bg-white px-3 py-2 rounded border text-blue-600 overflow-x-auto">
-                localhost:3000/u/{result.shortCode}
-              </code>
+          <div className="mt-6 p-5 bg-green-50 border-2 border-green-200 rounded-lg animate-fadeIn">
+            <p className="text-sm font-semibold text-green-800 mb-3">
+              ✅ Your shortened URL:
+            </p>
+            
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="text"
+                value={shortUrl}
+                readOnly
+                className="flex-1 bg-white px-3 py-2 rounded border-2 border-green-300 text-blue-600 font-mono text-sm"
+              />
               <button 
-                onClick={() => handleCopy(`http://localhost:3000/u/${result.shortCode}`)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm whitespace-nowrap"
+                onClick={() => handleCopy(shortUrl)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold whitespace-nowrap"
               >
-                Copy
+                📋 Copy
               </button>
             </div>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>Original: {result.longUrl}</p>
-              <p>Created: {result.createdAt?.toLocaleString()}</p>
-              <p>Clicks: {result.clicks}</p>
+
+            <div className="text-xs text-gray-600 space-y-1 bg-white p-3 rounded border border-gray-200">
+              <p><strong>Original:</strong> {result.longUrl}</p>
+              <p><strong>Created:</strong> {new Date(result.createdAt).toLocaleString()}</p>
+              <p><strong>Clicks:</strong> {result.clicks}</p>
             </div>
           </div>
         )}
