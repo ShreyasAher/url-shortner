@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://url-shortner-2is37l521-shreyas-aher-s-projects.vercel.app/sitemap.xml
