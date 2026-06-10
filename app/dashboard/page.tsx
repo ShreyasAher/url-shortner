@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from 'next/link'
+import { BarChart3, Link as LinkIcon, LogOut, Plus, RefreshCw } from 'lucide-react'
 import type { ShortenedUrl } from '@/app/types/url.types'
 import { LinkCard } from '@/components/ui/link-card'
 import { StatCard } from '@/components/ui/stat-card'
@@ -71,10 +72,10 @@ export default function DashboardPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">⏳</div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-zinc-400">Loading...</p>
         </div>
       </div>
     )
@@ -85,116 +86,129 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-              <p className="text-gray-600 mt-1">
-                Welcome back, {session.user?.name || session.user?.email}!
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
-              >
-                ← Home
-              </Link>
-              <Link
-                href="/"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-              >
-                ➕ Create New
-              </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-semibold"
-              >
-                Sign Out
-              </button>
-            </div>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Navigation */}
+      <nav className="border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold tracking-tight">
+            SHORTITOUT
+          </Link>
+          
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium transition inline-flex items-center gap-2"
+            >
+              <Plus size={16} />
+              NEW LINK
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium transition inline-flex items-center gap-2"
+            >
+              <LogOut size={16} />
+              SIGN OUT
+            </button>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+          <p className="text-zinc-400">
+            Welcome back, {session.user?.name || session.user?.email}
+          </p>
+        </div>
+
+        {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StatCard title="Total Links" value={stats.totalLinks} icon="🔗" />
-            <StatCard title="Total Clicks" value={stats.totalClicks} icon="👆" />
-            <StatCard title="Avg Clicks/Link" value={stats.avgClicks} icon="📊" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <StatCard 
+              title="Total Links" 
+              value={stats.totalLinks} 
+              icon={<LinkIcon size={24} />} 
+            />
+            <StatCard 
+              title="Total Clicks" 
+              value={stats.totalClicks} 
+              icon={<BarChart3 size={24} />} 
+            />
+            <StatCard 
+              title="Average Clicks" 
+              value={stats.avgClicks} 
+              icon={<BarChart3 size={24} />} 
+            />
           </div>
         )}
 
+        {/* Most Clicked */}
         {stats?.mostClicked && (
-          <div className="bg-linear-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-bold text-purple-800 mb-2">
-              🏆 Most Clicked Link
+          <div className="bg-zinc-900 border border-zinc-800 p-6 mb-12">
+            <h3 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wide">
+              Most Clicked Link
             </h3>
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <code className="text-sm text-purple-600 font-mono">
+                <code className="text-sm font-mono text-white">
                   {window.location.origin}/u/{stats.mostClicked.shortCode}
                 </code>
-                <p className="text-xs text-gray-600 mt-1 truncate">
+                <p className="text-xs text-zinc-500 mt-2 truncate">
                   {stats.mostClicked.longUrl}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-purple-800">
-                  {stats.mostClicked.clicks}
-                </p>
-                <p className="text-xs text-gray-600">clicks</p>
+              <div className="text-right ml-6">
+                <p className="text-3xl font-bold">{stats.mostClicked.clicks}</p>
+                <p className="text-xs text-zinc-500">clicks</p>
               </div>
             </div>
           </div>
         )}
 
+        {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-8">
-            <p className="text-red-600 font-semibold">❌ {error}</p>
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-6 mb-12">
+            <p className="font-medium mb-2">{error}</p>
             <button
               onClick={fetchData}
-              className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              className="text-sm underline"
             >
-              Retry
+              Try again
             </button>
           </div>
         )}
 
-       
+        {/* Links */}
         {!error && links.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              No Links Yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Create your first shortened URL to get started!
+          <div className="text-center py-16 bg-zinc-900 border border-zinc-800">
+            <LinkIcon className="mx-auto mb-4 text-zinc-600" size={48} />
+            <h3 className="text-xl font-bold mb-2">No Links Yet</h3>
+            <p className="text-zinc-400 mb-6">
+              Create your first shortened URL to get started
             </p>
             <Link
               href="/"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium hover:bg-zinc-200 transition"
             >
-              Create Your First Link
+              <Plus size={16} />
+              CREATE LINK
             </Link>
           </div>
         )}
 
-        
         {!error && links.length > 0 && (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">
                 Your Links ({links.length})
               </h2>
               <button
                 onClick={fetchData}
-                className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                className="text-sm text-zinc-400 hover:text-white inline-flex items-center gap-2"
               >
-                🔄 Refresh
+                <RefreshCw size={16} />
+                Refresh
               </button>
             </div>
 
@@ -211,6 +225,6 @@ export default function DashboardPage() {
           </>
         )}
       </div>
-    </main>
+    </div>
   )
 }
