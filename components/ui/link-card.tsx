@@ -6,9 +6,10 @@ import type { ShortenedUrl } from '@/app/types/url.types'
 type LinkCardProps = {
   link: ShortenedUrl
   onDelete: (id: string) => void
+  canDelete?: boolean 
 }
 
-export function LinkCard({ link, onDelete }: LinkCardProps) {
+export function LinkCard({ link, onDelete, canDelete = true }: LinkCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -45,7 +46,6 @@ export function LinkCard({ link, onDelete }: LinkCardProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200 hover:shadow-lg transition">
-      
       <div className="mb-4">
         <label className="text-xs text-gray-500 uppercase font-semibold">
           Short URL
@@ -71,7 +71,7 @@ export function LinkCard({ link, onDelete }: LinkCardProps) {
         <label className="text-xs text-gray-500 uppercase font-semibold">
           Original URL
         </label>
-        <p className="text-sm text-gray-700 mt-1 truncate">
+        <p className="text-sm text-gray-700 mt-1 truncate" title={link.longUrl}>
           {link.longUrl}
         </p>
       </div>
@@ -98,13 +98,15 @@ export function LinkCard({ link, onDelete }: LinkCardProps) {
         >
           🔗 Visit
         </a>
-        <button
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded font-semibold text-sm transition disabled:opacity-50"
-        >
-          {isDeleting ? '⏳ Deleting...' : '🗑️ Delete'}
-        </button>
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded font-semibold text-sm transition disabled:opacity-50"
+          >
+            {isDeleting ? '⏳ Deleting...' : '🗑️ Delete'}
+          </button>
+        )}
       </div>
     </div>
   )

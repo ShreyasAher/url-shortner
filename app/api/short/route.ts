@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 import { generateShortCode, isValidUrl, normalizeUrl } from '@/lib/utils'
 
 type CreateShortUrlBody = {
@@ -9,11 +10,13 @@ type CreateShortUrlBody = {
 
 export async function POST(request: NextRequest) {
   try {
-    
+    const session = await auth()
+    const userId = session?.user?.id || null
+
+   
     const body: CreateShortUrlBody = await request.json()
     const { longUrl } = body
 
-    
     if (!longUrl) {
       return NextResponse.json(
         { error: 'URL is required' },
@@ -21,7 +24,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    
     const normalizedUrl = normalizeUrl(longUrl)
     
     if (!isValidUrl(normalizedUrl)) {
@@ -31,9 +33,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    
+   
+    const whereCondition = userId 
+      ? { longUrl: normalizedUrl, userId }
+      : { longUrl: normalizedUrl, userId: null }
+
     const existingLink = await prisma.link.findFirst({
-      where: { longUrl: normalizedUrl }
+      where: whereCondition
     })
 
     if (existingLink) {
@@ -47,13 +53,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    
+   
     let shortCode = generateShortCode(6)
     let isUnique = false
     let attempts = 0
     const maxAttempts = 10
 
-  
     while (!isUnique && attempts < maxAttempts) {
       const existing = await prisma.link.findUnique({
         where: { shortCode }
@@ -74,15 +79,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    
     const link = await prisma.link.create({
       data: {
         longUrl: normalizedUrl,
-        shortCode: shortCode
+        shortCode: shortCode,
+        userId: userId 
       }
     })
 
-    
     return NextResponse.json(
       {
         success: true,
@@ -104,9 +108,21 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    
+    const session = await auth()
+    const userId = session?.user?.id
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    
     const links = await prisma.link.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 10 
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
     })
 
     return NextResponse.json({
