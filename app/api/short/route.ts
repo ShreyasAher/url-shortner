@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 import { generateShortCode, isValidUrl, normalizeUrl } from '@/lib/utils'
 
 type CreateShortUrlBody = {
@@ -9,6 +10,14 @@ type CreateShortUrlBody = {
 
 
 export async function POST(request: NextRequest) {
+
+  if (!checkRateLimit(request, 10)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
   try {
     const session = await auth()
     const userId = session?.user?.id || null

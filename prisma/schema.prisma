@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"  
   url      = env("DATABASE_URL")
 }
+
 
 model User {
   id            String    @id @default(cuid())
@@ -16,12 +17,14 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  accounts      Account[]
+  
   links         Link[]
+  accounts      Account[]
   sessions      Session[]
 
   @@map("users")
 }
+
 
 model Link {
   id        String   @id @default(cuid())
@@ -30,10 +33,14 @@ model Link {
   createdAt DateTime @default(now())
   clicks    Int      @default(0)
   userId    String?
+  
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  
+  @@index([userId])
+  @@index([shortCode])
   @@map("links")
 }
+
 
 model Account {
   id                String  @id @default(cuid())
@@ -48,7 +55,8 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -59,7 +67,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
